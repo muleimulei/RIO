@@ -1,10 +1,16 @@
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<string.h>
+#include<unistd.h>
+#include<errno.h>
 #define RIO_BUFSIZE 8192
 typedef struct{
-	int rio_fd;　//文件描述符
-	int rio_cnt; //缓冲区剩余字节数
-	char *rio_bufptr;　//下一个读的字节的位置
-	char rio_buf[RIO_BUFSIZE]; //缓冲区
-}
+	int rio_fd;
+	int rio_cnt;
+	char *rio_bufptr;
+	char rio_buf[RIO_BUFSIZE];
+} rio_t;
 
 void rio_readinitb(rio_t *rp, int fd){
 	rp->rio_fd = fd;
@@ -31,14 +37,13 @@ ssize_t rio_read(rio_t *rp, char *usrbuf, size_t n){
 	rp->rio_bufptr += cnt;
 	rp->rio_cnt -= cnt;
 	return cnt;
-	
 }
 ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen)
 {
 	int n, rc;
 	char c, *bufp = usrbuf;
 	for(n = 1; n<maxlen; n++){
-		if((rc = rio_read(rp, &cm 1))==1){
+		if((rc = rio_read(rp, &c,1))==1){
 			*bufp++ = c;
 			if(c=='\n'){
 				n++;

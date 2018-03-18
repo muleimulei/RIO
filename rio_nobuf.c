@@ -1,7 +1,10 @@
-
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<string.h>
 size_t rio_readn(int fd, void *usrbuf, size_t n){
-	size_t nleft = n; //要讀的字節數
-	size_t nread;　//已读的字节数
+	size_t nleft = n;
+	size_t nread;
 	char *bufp = usrbuf;
 	while(nleft>0){
 		if((nread = read(fd, bufp, nleft))<0){
@@ -27,13 +30,13 @@ size_t rio_writen(int fd, void *usrbuf, size_t n){
 	while(nleft>0){
 		if((nwritten = write(fd, bufp, nleft))<=0){
 			if(errno == EINTR){
-				nread = 0; // 被中断
+				nwritten = 0; // 被中断
 			}else{
 				return -1;
 			}
 		}
 		nleft -= nwritten;
-		bufp += nwritten;		
+		bufp += nwritten;
 	}
 
 	return n;
