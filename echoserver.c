@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <string.h>
+#include <signal.h>
+#include <sys/wait.h>
 #define MAXLINE 1000
 void echo(int confd){
 	size_t n;
@@ -17,6 +19,11 @@ void echo(int confd){
 		printf("server received %d bytes \n", (int)n);
 		rio_writen(confd, buf,n);
 	}
+}
+
+void sigchld_handle(int sig){
+	while(waitpid(-1, 0, WNOHANG)>0);
+	return;
 }
 
 int main(int argc, char **argv)
@@ -31,12 +38,18 @@ int main(int argc, char **argv)
 	}
 	listenfd = open_listenfd(argv[1]);
 	printf("%d\n", listenfd);
+	signal(SIGCHLD, sigchld_handle);
 	while(1){
 		clientlen = sizeof(struct sockaddr_storage);
 		connfd = accept(listenfd, (struct sockaddr *)&clientaddr, &clientlen);
 		getnameinfo((struct sockaddr *)&clientaddr, clientlen, client_hostname, MAXLINE, client_port, MAXLINE,0);
 		printf("Connenct to (%s, %s)\n", client_hostname, client_port);
-		echo(connfd);
+		if(fork()==0){
+			close(listenfd);
+			echo(connfd);
+			close(connfd);
+			exit(0);
+		}
 		close(connfd);
 	}
 	exit(0);
